@@ -299,14 +299,15 @@
 
             // Función para configurar event listeners
             function setupEventListeners() {
+                const step = 5;
                 // Evento para generar terreno
                 generateBtn.addEventListener('click', generateTerrain);
 
                 // Eventos de navegación de cámara
-                moveUpBtn.addEventListener('click', () => moveCamera(0, -20));
-                moveDownBtn.addEventListener('click', () => moveCamera(0, 20));
-                moveLeftBtn.addEventListener('click', () => moveCamera(-20, 0));
-                moveRightBtn.addEventListener('click', () => moveCamera(20, 0));
+                moveUpBtn.addEventListener('click', () => moveCamera(0, -step));
+                moveDownBtn.addEventListener('click', () => moveCamera(0, step));
+                moveLeftBtn.addEventListener('click', () => moveCamera(-step, 0));
+                moveRightBtn.addEventListener('click', () => moveCamera(step, 0));
 
                 // Eventos de zoom
                 zoomInBtn.addEventListener('click', () => changeZoom(0.1));
