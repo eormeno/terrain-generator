@@ -178,7 +178,7 @@ class ProceduralTerrainService
         $combinedValue = ($value0 + $value25 + $value05 + $value1 + $value2 + $value3 + $value4) / 1.9375;
 
         // random factor
-        $rfactor = 0.5;
+        $rfactor = 0.75;
 
         // Añadir un pequeño componente aleatorio para romper patrones persistentes
         $randomComponent = (mt_rand(0, 1000) / 1000) * $rfactor;
