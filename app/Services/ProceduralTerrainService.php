@@ -49,8 +49,8 @@ class ProceduralTerrainService
         // Calcular el área visible considerando el buffer
         $visibleX = max(0, $cameraX - intval($cameraWidth / 2) - $buffer);
         $visibleY = max(0, $cameraY - intval($cameraHeight / 2) - $buffer);
-        $visibleWidth = $cameraWidth + ($buffer * 2);
-        $visibleHeight = $cameraHeight + ($buffer * 2);
+        $visibleWidth = $cameraWidth + $buffer * 2;
+        $visibleHeight = $cameraHeight + $buffer * 2;
 
         // Asegurar que no nos pasamos de los límites del mundo
         $visibleX = min($visibleX, $this->worldWidth - $visibleWidth);
@@ -73,12 +73,12 @@ class ProceduralTerrainService
      */
     private function generateTerrainChunk(int $startX, int $startY, int $width, int $height): array
     {
-        // $cacheKey = "terrain_chunk_{$this->seed}_{$startX}_{$startY}_{$width}_{$height}";
+        $cacheKey = "terrain_chunk_{$this->seed}_{$startX}_{$startY}_{$width}_{$height}";
 
-        // // Intentar recuperar del caché para mejorar rendimiento
-        // if (Cache::has($cacheKey)) {
-        //     return Cache::get($cacheKey);
-        // }
+        // Intentar recuperar del caché para mejorar rendimiento
+        if (Cache::has($cacheKey)) {
+            return Cache::get($cacheKey);
+        }
 
         $terrain = [];
 
@@ -125,17 +125,17 @@ class ProceduralTerrainService
                 $tileType = $this->determineTileType($elevation, $moisture, $temperature);
 
                 $terrain[$y][$x] = [
-                    'x' => $globalX,
-                    'y' => $globalY,
+                    // 'x' => $globalX,
+                    // 'y' => $globalY,
                     'type' => $tileType,
-                    'tile_id' => $this->getTileIdByType($tileType),
-                    'elevation' => $elevation,
+                    // 'tile_id' => $this->getTileIdByType($tileType),
+                    // 'elevation' => $elevation,
                 ];
             }
         }
 
         // Guardar en caché para futuras solicitudes
-        // Cache::put($cacheKey, $terrain, now()->addMinutes(60));
+        Cache::put($cacheKey, $terrain, now()->addMinutes(60));
 
         return $terrain;
     }
