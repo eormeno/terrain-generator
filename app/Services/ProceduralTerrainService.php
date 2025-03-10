@@ -73,14 +73,24 @@ class ProceduralTerrainService
      */
     private function generateTerrainChunk(int $startX, int $startY, int $width, int $height): array
     {
-        $cacheKey = "terrain_chunk_{$this->seed}_{$startX}_{$startY}_{$width}_{$height}";
+        // $cacheKey = "terrain_chunk_{$this->seed}_{$startX}_{$startY}_{$width}_{$height}";
 
-        // Intentar recuperar del caché para mejorar rendimiento
-        if (Cache::has($cacheKey)) {
-            return Cache::get($cacheKey);
-        }
+        // // Intentar recuperar del caché para mejorar rendimiento
+        // if (Cache::has($cacheKey)) {
+        //     return Cache::get($cacheKey);
+        // }
 
         $terrain = [];
+
+        // Calcular el centro del mundo
+        $centerX = $this->worldWidth / 2;
+        $centerY = $this->worldHeight / 2;
+
+        // Radio máximo (distancia del centro a la esquina)
+        $maxRadius = sqrt(pow($this->worldWidth/2, 2) + pow($this->worldHeight/2, 2));
+
+        // Factor de ajuste para la forma de la isla (valores más altos = isla más pequeña)
+        $islandFactor = 4.0;
 
         // Generar el terreno usando el algoritmo de ruido Perlin
         for ($y = 0; $y < $height; $y++) {
@@ -89,8 +99,25 @@ class ProceduralTerrainService
                 $globalX = $startX + $x;
                 $globalY = $startY + $y;
 
+                // Calcular la distancia desde este punto al centro del mundo
+                $distanceToCenter = sqrt(pow($globalX - $centerX, 2) + pow($globalY - $centerY, 2));
+
+                // Normalizar la distancia (0 en el centro, 1 en los bordes más lejanos)
+                $normalizedDistance = $distanceToCenter / $maxRadius;
+
+                // Aplicar una función que aumenta el efecto de la distancia (hace que los bordes sean más pronunciados)
+                $islandGradient = pow($normalizedDistance * $islandFactor, 2);
+
+                // Limitar el gradiente a un máximo de 1
+                $islandGradient = min(1, $islandGradient);
+
+                // Generar base de elevación con Perlin
+                $baseElevation = $this->perlinNoise($globalX / 100, $globalY / 100, $this->seed);
+
+                // Combinar con forma de isla: restar el gradiente de la isla para que el centro sea alto y los bordes bajos
+                $elevation = max(0, $baseElevation - $islandGradient);
+
                 // Usar diferentes frecuencias para generar capas de terreno
-                $elevation = $this->perlinNoise($globalX / 100, $globalY / 100, $this->seed);
                 $moisture = $this->perlinNoise($globalX / 120, $globalY / 120, $this->seed + 1000);
                 $temperature = $this->perlinNoise($globalX / 150, $globalY / 150, $this->seed + 2000);
 
@@ -108,7 +135,7 @@ class ProceduralTerrainService
         }
 
         // Guardar en caché para futuras solicitudes
-        Cache::put($cacheKey, $terrain, now()->addMinutes(60));
+        // Cache::put($cacheKey, $terrain, now()->addMinutes(60));
 
         return $terrain;
     }
@@ -148,8 +175,8 @@ class ProceduralTerrainService
      */
     private function determineTileType(float $elevation, float $moisture, float $temperature): string
     {
-        // Agua profunda
-        if ($elevation < 0.2) {
+        // Agua profunda - aumentamos el umbral para tener más agua en los bordes
+        if ($elevation < 0.01) {
             return 'deep_water';
         }
 
