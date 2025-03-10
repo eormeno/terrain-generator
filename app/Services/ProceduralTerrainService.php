@@ -156,6 +156,12 @@ class ProceduralTerrainService
         // Capa 0: Frecuencia base (ruido aleatorio)
         $value0 = (mt_rand(0, 1000) / 1000) * 0.5;
 
+        // Capa 0.25: Frecuencia base con variación direccional (ruido aleatorio)
+        $value25 = sin($x * 2.5 + $seed) * cos($y * 2.5 + $seed) * 0.125 + 0.125;
+
+        // Capa 0.5: Frecuencia base con variación direccional (ruido aleatorio)
+        $value05 = sin($x * 5 + $seed) * cos($y * 5 + $seed) * 0.25 + 0.25;
+
         // Capa 1: Frecuencia baja (características grandes)
         $value1 = sin($x * 10 + $seed) * cos($y * 10 + $seed) * 0.5 + 0.5;
 
@@ -169,7 +175,7 @@ class ProceduralTerrainService
         $value4 = sin($x * 50 + $y * 30 + $seed + 15) * cos($y * 45 + $x * 25 + $seed + 20) * 0.0625 + 0.0625;
 
         // Combinar todas las capas con normalización para mantener el rango entre 0 y 1
-        $combinedValue = ($value0 + $value1 + $value2 + $value3 + $value4) / 1.9375;
+        $combinedValue = ($value0 + $value25 + $value05 + $value1 + $value2 + $value3 + $value4) / 1.9375;
 
         // random factor
         $rfactor = 0.5;
