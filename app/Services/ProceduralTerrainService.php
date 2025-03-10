@@ -87,7 +87,7 @@ class ProceduralTerrainService
         $centerY = $this->worldHeight / 2;
 
         // Radio máximo (distancia del centro a la esquina)
-        $maxRadius = sqrt(pow($this->worldWidth/2, 2) + pow($this->worldHeight/2, 2));
+        $maxRadius = sqrt(pow($this->worldWidth / 2, 2) + pow($this->worldHeight / 2, 2));
 
         // Factor de ajuste para la forma de la isla (valores más altos = isla más pequeña)
         $islandFactor = 4.0;
@@ -141,7 +141,7 @@ class ProceduralTerrainService
     }
 
     /**
-     * Implementación simplificada de ruido Perlin
+     * Implementación mejorada de ruido Perlin con múltiples capas
      *
      * @param float $x Coordenada X
      * @param float $y Coordenada Y
@@ -153,16 +153,39 @@ class ProceduralTerrainService
         // Establecer la semilla para la generación
         mt_srand($seed);
 
-        // Implementación básica de ruido Perlin (simplificada)
-        $value = sin($x * 10 + $seed) * cos($y * 10 + $seed) * 0.5 + 0.5;
+        // Capa 0: Frecuencia base (ruido aleatorio)
+        $value0 = (mt_rand(0, 1000) / 1000) * 0.5;
 
-        // Añadir una segunda capa de ruido para más variación
-        $value = ($value + sin($x * 20 + $seed + 5) * cos($y * 20 + $seed + 5) * 0.25 + 0.25) / 1.5;
+        // Capa 1: Frecuencia baja (características grandes)
+        $value1 = sin($x * 10 + $seed) * cos($y * 10 + $seed) * 0.5 + 0.5;
+
+        // Capa 2: Frecuencia media (detalles medios)
+        $value2 = sin($x * 20 + $seed + 5) * cos($y * 20 + $seed + 5) * 0.25 + 0.25;
+
+        // Capa 3: Frecuencia alta (detalles pequeños)
+        $value3 = sin($x * 35 + $seed + 10) * cos($y * 35 + $seed + 10) * 0.125 + 0.125;
+
+        // Capa 4: Frecuencia muy alta con variación direccional (textura)
+        $value4 = sin($x * 50 + $y * 30 + $seed + 15) * cos($y * 45 + $x * 25 + $seed + 20) * 0.0625 + 0.0625;
+
+        // Combinar todas las capas con normalización para mantener el rango entre 0 y 1
+        $combinedValue = ($value0 + $value1 + $value2 + $value3 + $value4) / 1.9375;
+
+        // random factor
+        $rfactor = 0.5;
+
+        // Añadir un pequeño componente aleatorio para romper patrones persistentes
+        $randomComponent = (mt_rand(0, 1000) / 1000) * $rfactor;
+        $finalValue = min(1.0, max(0.0, $combinedValue + $randomComponent - $rfactor / 2));
+
+        // Añadir un componente aleatorio mayor para romper patrones persistentes
+        // $randomComponent = (mt_rand(0, 1000) / 1000) * 0.15;
+        // $finalValue = min(1.0, max(0.0, $combinedValue + $randomComponent - 0.075));
 
         // Restaurar la semilla original
         mt_srand($this->seed);
 
-        return $value;
+        return $finalValue;
     }
 
     /**
